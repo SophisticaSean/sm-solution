@@ -1,6 +1,8 @@
 import os, time, random
 from collections import OrderedDict
-def can_move(position, index, mazelines):
+def can_move(coords, mazelines):
+    position = coords[0]
+    index = coords[1]
     temp_arr = []
     try:
         if mazelines[index - 1][position] != "X":
@@ -26,14 +28,12 @@ def can_move(position, index, mazelines):
 
 def where_to(s_coord, f_coord):
     # x value
-    print s_coord, f_coord
     x_diff = (f_coord[0] - s_coord[0])
     # y value
     y_diff = (f_coord[1] - s_coord[1])
     return [x_diff, y_diff]
 
 def closer(old_where, new_where):
-    print old_where, new_where
     if (new_where[0] >= old_where[0]) or (new_where[1] >= old_where[1]):
         return True
     else:
@@ -43,7 +43,8 @@ def coords_arr(inst_arr):
     return [inst_arr[1], inst_arr[2]]
 
 def choose_direction(current_coords, f_coords, options, step, preferred_direction = None):
-    target = where_to(coords_arr(current_coords), f_coords)
+    adj_current = coords_arr(current_coords)
+    target = where_to(adj_current, f_coords)
 
     if target[0] > 0:
         preferred_direction = "E"
@@ -56,18 +57,46 @@ def choose_direction(current_coords, f_coords, options, step, preferred_directio
     if preferred_direction == None:
         return random.choice(options)
     else:
-        for item in options:
-            if item[0] == preferred_direction:
-                if step >= 3 and item == some_set[step - 2]:
+        if len(can_move(adj_current, mazelines)) >= 3:
+            for item in options:
+                if item[0] == preferred_direction:
+                    if step >= 3 and item == some_set[step - 2]:
+                        print item
+                    else:
+                        return item
+        else:
+            for item in options:
+                if item in some_set.values():
                     print item
                 else:
                     return item
         return random.choice(options)
 
+def replay(instructions, mazelines):
+    for i in range(len(instructions)):
+        temp_coords = coords_arr(instructions[i])
+        frame(temp_coords, mazelines)
+
+def frame(temp_coords, mazelines):
+    print temp_coords
+    for num in reversed(range(1, 11)):
+        print mazelines[temp_coords[1] - num]
+
+    current_line = list(mazelines[temp_coords[1]])
+    current_line[temp_coords[0]] = "@"
+    print "".join(current_line)
+
+    for num in range(1, 21):
+        print mazelines[temp_coords[1] + num]
+    time.sleep(0.05)
+    os.system('clear')
 
 
 
-maze = open("1.in", "r")
+
+
+
+maze = open("1a.in", "r")
 mazelines = maze.readlines()
 line_len = len(mazelines[0])
 mazestring = str(mazelines)
@@ -76,7 +105,7 @@ for index, line in enumerate(mazelines):
     if "S" in line:
         print line
         s_coord = [line.index("S"), index]
-        coolstuff = can_move(line.index("S"), index, mazelines)
+        coolstuff = can_move([line.index("S"), index], mazelines)
     if "F" in line:
         f_coord = [line.index("F"), index]
 
@@ -88,45 +117,61 @@ old_where = where_to(s_coord, f_coord)
 some_set = {}
 old_value = s_coord
 preferred_direction = None
-while "F" in mazestring:
-    close_arr = []
-    for i in coolstuff:
-        temp_close = closer(old_value, [i[1], i[2]])
-        if temp_close == True:
-            close_arr.append(i)
-        old_value = [i[1], i[2]]
 
-    temp_coords = choose_direction(temp_coords, f_coord, close_arr, step)
+complete_set = []
+runs = 1
 
-        #while temp_coords in some_set.values():
-            #temp_coords = random.choice(close_arr)
-    coolstuff = can_move(temp_coords[1], temp_coords[2], mazelines)
-    print coolstuff
+finished = False
+while runs != 0:
+    for index, line in enumerate(mazelines):
+        if "S" in line:
+            s_coord = [line.index("S"), index]
+            coolstuff = can_move([line.index("S"), index], mazelines)
+        if "F" in line:
+            f_coord = [line.index("F"), index]
+    solution = {}
+    temp_coords = coolstuff[0]
+    step = 0
+    old_where = where_to(s_coord, f_coord)
+    some_set = {}
+    old_value = s_coord
+    preferred_direction = None
+    while finished == False:
+        close_arr = []
+        for i in coolstuff:
+            temp_close = closer(old_value, [i[1], i[2]])
+            if temp_close == True:
+                close_arr.append(i)
+            old_value = [i[1], i[2]]
 
-    #if :
-        #temp_coords = can_move(temp_coords[1], temp_coords[2], mazelines)[1]
-    #else:
-    #temp_coords = random.choice(can_move(temp_coords[1], temp_coords[2], mazelines))
-    #magic = list(mazelines[temp_coords[2]])
-    #magic[temp_coords[1]] = "X"
-    #mazelines[temp_coords[2]] = ''.join(magic)
-    #if temp_coords not in some_set.values():
-    some_set[step] = temp_coords
-    if f_coord == [temp_coords[1], temp_coords[2]]:
-        print str(some_set)
-        time.sleep(100)
-    if f_coord[0] == temp_coords[1]:
-        preferred_direction = "S"
-    print mazelines[temp_coords[2] - 1]
-    current_line = list(mazelines[temp_coords[2]])
-    current_line[temp_coords[1]] = "o"
-    print "".join(current_line)
-    print mazelines[temp_coords[2] + 1]
-        #time.sleep(0.5)
-    #print f_coord, [temp_coords[1], temp_coords[2]]
-    step = step + 1
-    print some_set
-    print step, where_to([temp_coords[1], temp_coords[2]], f_coord)
-    time.sleep(0.1)
-#print "F_coord: " + str(f_coord)
-#print "S_coord: " + str(s_coord)
+        temp_coords = choose_direction(temp_coords, f_coord, close_arr, step)
+
+        coolstuff = can_move(coords_arr(temp_coords), mazelines)
+        print coolstuff
+
+        some_set[step] = temp_coords
+        if f_coord == [temp_coords[1], temp_coords[2]]:
+            print len(some_set)
+            runs = runs - 1
+            complete_set.append(some_set)
+            print runs
+            finished = True
+        if step > 800:
+            finished = True
+        if f_coord[0] == temp_coords[1]:
+            preferred_direction = "S"
+
+        chords = coords_arr(temp_coords)
+        #frame([temp_coords[1], temp_coords[2]], mazelines)
+        step = step + 1
+        print step, where_to([temp_coords[1], temp_coords[2]], f_coord)
+    finished = False
+best_array = []
+for i in complete_set:
+    best_array.append(len(i))
+best_array.sort()
+#print best_array
+#print complete_set[0]
+replay(complete_set[0], mazelines)
+print len(complete_set[0])
+print best_array
