@@ -1,5 +1,5 @@
 import os, time, random
-
+from collections import OrderedDict
 def can_move(position, index, mazelines):
     temp_arr = []
     try:
@@ -26,6 +26,7 @@ def can_move(position, index, mazelines):
 
 def where_to(s_coord, f_coord):
     # x value
+    print s_coord, f_coord
     x_diff = (f_coord[0] - s_coord[0])
     # y value
     y_diff = (f_coord[1] - s_coord[1])
@@ -37,6 +38,32 @@ def closer(old_where, new_where):
         return True
     else:
         return False
+
+def coords_arr(inst_arr):
+    return [inst_arr[1], inst_arr[2]]
+
+def choose_direction(current_coords, f_coords, options, step, preferred_direction = None):
+    target = where_to(coords_arr(current_coords), f_coords)
+
+    if target[0] > 0:
+        preferred_direction = "E"
+    if target[0] < 0:
+        preferred_direction = "W"
+    if target[1] > 0:
+        preferred_direction = "S"
+    if target[1] < 0:
+        preferred_direction = "N"
+    if preferred_direction == None:
+        return random.choice(options)
+    else:
+        for item in options:
+            if item[0] == preferred_direction:
+                if step >= 3 and item == some_set[step - 2]:
+                    print item
+                else:
+                    return item
+        return random.choice(options)
+
 
 
 
@@ -60,6 +87,7 @@ step = 0
 old_where = where_to(s_coord, f_coord)
 some_set = {}
 old_value = s_coord
+preferred_direction = None
 while "F" in mazestring:
     close_arr = []
     for i in coolstuff:
@@ -67,7 +95,9 @@ while "F" in mazestring:
         if temp_close == True:
             close_arr.append(i)
         old_value = [i[1], i[2]]
-    temp_coords = random.choice(close_arr)
+
+    temp_coords = choose_direction(temp_coords, f_coord, close_arr, step)
+
         #while temp_coords in some_set.values():
             #temp_coords = random.choice(close_arr)
     coolstuff = can_move(temp_coords[1], temp_coords[2], mazelines)
@@ -80,16 +110,23 @@ while "F" in mazestring:
     #magic = list(mazelines[temp_coords[2]])
     #magic[temp_coords[1]] = "X"
     #mazelines[temp_coords[2]] = ''.join(magic)
-    if temp_coords not in some_set.values():
-        some_set[step] = temp_coords
+    #if temp_coords not in some_set.values():
+    some_set[step] = temp_coords
     if f_coord == [temp_coords[1], temp_coords[2]]:
         print str(some_set)
         time.sleep(100)
     if f_coord[0] == temp_coords[1]:
-        time.sleep(10)
+        preferred_direction = "S"
+    print mazelines[temp_coords[2] - 1]
+    current_line = list(mazelines[temp_coords[2]])
+    current_line[temp_coords[1]] = "o"
+    print "".join(current_line)
+    print mazelines[temp_coords[2] + 1]
+        #time.sleep(0.5)
     #print f_coord, [temp_coords[1], temp_coords[2]]
     step = step + 1
+    print some_set
     print step, where_to([temp_coords[1], temp_coords[2]], f_coord)
-    time.sleep(0.001)
+    time.sleep(0.1)
 #print "F_coord: " + str(f_coord)
 #print "S_coord: " + str(s_coord)
