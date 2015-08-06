@@ -75,6 +75,7 @@ def choose_direction(current_coords, f_coords, options, step, preferred_directio
 def replay(instructions, mazelines):
     for i in range(len(instructions)):
         temp_coords = coords_arr(instructions[i])
+        print i
         frame(temp_coords, mazelines)
 
 def frame(temp_coords, mazelines):
@@ -88,7 +89,7 @@ def frame(temp_coords, mazelines):
 
     for num in range(1, 21):
         print mazelines[temp_coords[1] + num]
-    time.sleep(0.05)
+    time.sleep(0.1)
     os.system('clear')
 
 
@@ -147,7 +148,6 @@ while runs != 0:
         temp_coords = choose_direction(temp_coords, f_coord, close_arr, step)
 
         coolstuff = can_move(coords_arr(temp_coords), mazelines)
-        print coolstuff
 
         some_set[step] = temp_coords
         if f_coord == [temp_coords[1], temp_coords[2]]:
@@ -156,10 +156,10 @@ while runs != 0:
             complete_set.append(some_set)
             print runs
             finished = True
-        if step > 800:
-            finished = True
-        if f_coord[0] == temp_coords[1]:
-            preferred_direction = "S"
+        #if step > 600:
+            #finished = True
+        #if f_coord[0] == temp_coords[1]:
+            #preferred_direction = "S"
 
         chords = coords_arr(temp_coords)
         #frame([temp_coords[1], temp_coords[2]], mazelines)
@@ -172,6 +172,25 @@ for i in complete_set:
 best_array.sort()
 #print best_array
 #print complete_set[0]
-replay(complete_set[0], mazelines)
-print len(complete_set[0])
-print best_array
+# replay(complete_set[0], mazelines)
+#print len(complete_set[0])
+#print best_array
+super_cool = {}
+best_array = []
+new_step = 0
+for item in complete_set[0].values():
+    best_array.append(coords_arr(item))
+for key, value in complete_set[0].iteritems():
+    current_coords = coords_arr(value)
+    if (key >= 2) and (current_coords in best_array[0:key]):
+        #del complete_set[0][key - 2]
+        print("lol")
+    else:
+        super_cool[new_step] = value
+        new_step = new_step + 1
+#for key, value in super_cool.iteritems():
+    #print str(key), str(value)
+
+print len(complete_set[0]) - len(super_cool)
+time.sleep(5)
+replay(super_cool, mazelines)
